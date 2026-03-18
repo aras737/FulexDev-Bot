@@ -1,11 +1,12 @@
 module.exports = {
-    token: "token: process.env.TOKEN,", 
+    // Tırnakları kaldırdık, direkt sistemdeki değişkene bağladık
+    token: process.env.TOKEN, 
     prefix: "tfa!",
-    botdavet: "BOT_DAVET_BURAYA",
-    desteksunucusu: "BOT_DESTEK_SUNUCUSU_BURAYA",
-    website: "BOT_WEBSITE_BURAYA",
-    topgg: "BOT_TOPGG_KEY_BURAYA",
-    politika: "BOT_TOS_BURAYA",
-    sunucuid: "BOT_DESTEKSUNUCUID_BURAYA",
-    destekçi: "BOT_DESTEKCI_BURAYA"
+    botdavet: "https://discord.com/oauth2/authorize...", // Buraya linkini koy
+    desteksunucusu: "https://discord.gg/...", // Buraya davet linkini koy
+    website: "https://siten.com",
+    topgg: "TOPGG_KEY_BURAYA",
+    politika: "https://siten.com/tos",
+    sunucuid: "SUNUCU_ID_BURAYA",
+    destekçi: "DESTEKCI_ROL_ID_BURAYA"
 }
