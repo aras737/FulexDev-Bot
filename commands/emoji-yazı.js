@@ -1,55 +1,45 @@
-const Discord = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
+
 const mapping = {
-' ': '   ',
-'0': ':zero:',
-'1': ':one:',
-'2': ':two:',
-'3': ':three:',
-'4': ':four:',
-'5': ':five:',
-'İ': ':regional_indicator_i:',
-'Ö': ':regional_indicator_o:',
-'ö': ':regional_indicator_o:',
-'Ş': ':regional_indicator_s:',
-'Ü': ':regional_indicator_u:',
-'Ç': ':regional_indicator_c:', 
-'ı': ':regional_indicator_i:', 
-'o': ':regional_indicator_o:',
-'ş': ':regional_indicator_s:',
-'ğ': ':regional_indicator_g:',
-'Ğ': ':regional_indicator_g:',
-'ü': ':regional_indicator_u:',
-'ç': ':regional_indicator_c:', 
-'6': ':six:',
-'7': ':seven:',
-'8': ':eight:',
-'9': ':nine:',
-'!': ':grey_exclamation:',
-'?': ':grey_question:',
-'#': ':hash:',
-'*': ':asterisk:'
+    ' ': '   ',
+    '0': ':zero:', '1': ':one:', '2': ':two:', '3': ':three:', '4': ':four:',
+    '5': ':five:', '6': ':six:', '7': ':seven:', '8': ':eight:', '9': ':nine:',
+    '!': ':grey_exclamation:', '?': ':grey_question:', '#': ':hash:', '*': ':asterisk:',
+    'i': ':regional_indicator_i:', 'İ': ':regional_indicator_i:',
+    'ı': ':regional_indicator_i:', 'ş': ':regional_indicator_s:',
+    'Ş': ':regional_indicator_s:', 'ğ': ':regional_indicator_g:',
+    'Ğ': ':regional_indicator_g:', 'ü': ':regional_indicator_u:',
+    'Ü': ':regional_indicator_u:', 'ö': ':regional_indicator_o:',
+    'Ö': ':regional_indicator_o:', 'ç': ':regional_indicator_c:',
+    'Ç': ':regional_indicator_c:'
 };
 
+// Alfabeyi otomatik eşleştiriyoruz
 'abcdefghijklmnopqrstuvwxyz'.split('').forEach(c => {
-mapping[c] = mapping[c.toUpperCase()] = ` :regional_indicator_${c}:`;
+    mapping[c] = `:regional_indicator_${c}:`;
+    mapping[c.toUpperCase()] = `:regional_indicator_${c}:`;
 });
-exports.run = (client, message, args) => {
-if (args.length < 1) return message.reply('**Bir mesaj belirt**')
 
-if (args.length > 50) return message.channel.send(`:x: En fazla 50 Harf Kullanabilirsiniz.`);
+exports.run = async (client, message, args) => {
+    let metin = args.join(' ');
+    
+    if (!metin) return message.reply('**❌ Bir mesaj belirtmelisin!**');
+    if (metin.length > 50) return message.reply('**❌ En fazla 50 karakter kullanabilirsin!**');
 
-message.channel.send(
-args.join(' ')
-.split('')
-.map(c => mapping[c] || c)
-.join('')
-);
+    const emojiMetin = metin
+        .split('')
+        .map(c => mapping[c] || c)
+        .join('');
+
+    // Sadece metin olarak gönderiyoruz (Emoji olması için embed içine koymamak daha iyidir)
+    message.channel.send(emojiMetin);
 };
 
 exports.conf = {
-aliases: ['emojiyazısı', 'emojiyaz', 'emoji-yazı']
+    aliases: ['emojiyazısı', 'emojiyaz', 'emoji-yazı'],
+    permLevel: 0
 };
 
 exports.help = {
-name: 'emojiyazı'
+    name: 'emojiyazı'
 };
