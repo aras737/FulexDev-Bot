@@ -1,44 +1,25 @@
-const Discord = require("discord.js");
+const { EmbedBuilder, PermissionsBitField } = require("discord.js");
 
 exports.run = async (client, message, args) => {
+    if (!message.member.permissions.has(PermissionsBitField.Flags.BanMembers)) return message.reply("Yeterli yetkiniz yok.");
 
+    let user = message.mentions.users.first() || client.users.cache.get(args[0]);
+    let sebep = args.slice(1).join(' ') || "Sebep belirtilmedi";
 
-        if(!message.member.permissions.has(Discord.PermissionsBitField.Flags.Administrator)) return message.channel.send("Üyeleri Banla Yetkiniz Yok.")
+    if (!user) return message.reply("Lütfen bir kullanıcı belirtin.");
 
+    try {
+        await message.guild.members.ban(user.id, { reason: sebep });
 
-        let user = message.mentions.users.first();
+        const banEmbed = new EmbedBuilder()
+            .setColor("#2ecc71") // Görseldeki yeşil tonu
+            .setDescription(`### Kullanıcı Başarıyla Yasaklandı\n\n**Yasaklanan Kullanıcı**\n${user.tag} (${user.id})\n**Yetkili**\n${message.author.username}\n**Sebep**\n${sebep}\n**Silinen Mesajlar**\n0 günlük\n**Tarih**\n<t:${Math.floor(Date.now() / 1000)}:F>`);
 
-
-
-
-        if(!user) return message.channel.send("Lütfen Banlanacak Kişiyi Belirtiniz.")
-
-
-
-
-const üye = message.guild.members.cache.get(user.id)
-
-
-üye.ban()
-
-
-
-
-
-
-
-
-message.channel.send("Banladım!")
-
-
-
-
-}
-
-  exports.conf = {
-  aliases: []
+        message.channel.send({ embeds: [banEmbed] });
+    } catch (e) {
+        message.reply("Kullanıcıyı yasaklayamadım.");
+    }
 };
 
-exports.help = {
-  name: "ban"
-};
+exports.conf = { aliases: ["yasakla"] };
+exports.help = { name: "ban" };
