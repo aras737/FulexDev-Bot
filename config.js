@@ -1,5 +1,5 @@
 module.exports = {
-    token: "BOT_TOKEN_BURAYA", 
+    token: "MTQxNTE5MzgwMzI3NDU4ODIyMQ.G2Ffqw.e8bKC4exqQ21MEDdGc0wq_M1G_proBGsDPCYb8", 
     prefix: "tfa!",
     botdavet: "BOT_DAVET_BURAYA",
     desteksunucusu: "BOT_DESTEK_SUNUCUSU_BURAYA",
