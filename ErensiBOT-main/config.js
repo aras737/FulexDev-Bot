@@ -1,5 +1,5 @@
 module.exports = {
-    token: "BOT_TOKEN_BURAYA", 
+    token: process.env.TOKEN,
     prefix: "e!",
     botdavet: "BOT_DAVET_BURAYA",
     desteksunucusu: "BOT_DESTEK_SUNUCUSU_BURAYA",
