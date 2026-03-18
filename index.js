@@ -1,113 +1,128 @@
+
+require("dotenv").config()
+
 const { 
-  Client, 
-  Collection, 
-  GatewayIntentBits, 
-  Partials, 
-  Events, 
-  REST, 
-  Routes, 
-  EmbedBuilder, 
-  ActivityType 
-} = require("discord.js");
-const db = require("croxydb");
-const fs = require("fs");
-const path = require("path");
-const noblox = require("noblox.js");
-require("dotenv").config();
+Client,
+GatewayIntentBits,
+Partials,
+EmbedBuilder
+} = require("discord.js")
 
-// Discord Client Ayarları
+const fs = require("fs")
+const db = require("croxydb")
+
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildPresences,
-    GatewayIntentBits.GuildVoiceStates
-  ],
-  partials: [Partials.Channel, Partials.Message, Partials.User],
-});
+partials:[
+Partials.Message,
+Partials.Channel,
+Partials.GuildMember,
+Partials.Reaction,
+Partials.User
+],
+intents:[
+GatewayIntentBits.Guilds,
+GatewayIntentBits.GuildMembers,
+GatewayIntentBits.GuildMessages,
+GatewayIntentBits.GuildMessageReactions,
+GatewayIntentBits.MessageContent,
+GatewayIntentBits.DirectMessages
+]
+})
 
-client.commands = new Collection();
-client.db = db;
-const commands = [];
+module.exports = client
 
-// 🔒 YETKİ VE SUNUCU AYARLARI
-const ALLOWED_USERS = ["752639955049644034", "1389930042200559706"];
-const GUILD_ID = "SUNUCU_ID_BURAYA"; // Kendi sunucu ID'ni buraya yaz kanka
+// READY
+client.once("ready",()=>{
+console.log("✅ Bot Aktif:",client.user.tag)
+client.user.setPresence({
+activities:[{name:"TFA Moderasyon",type:0}],
+status:"online"
+})
+})
 
-// --- KOMUT YÜKLEYİCİ ---
-const commandsPath = path.join(__dirname, "commands");
-if (fs.existsSync(commandsPath)) {
-    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
-    for (const file of commandFiles) {
-        const command = require(path.join(commandsPath, file));
-        if (command.data && command.execute) {
-            client.commands.set(command.data.name, command);
-            commands.push(command.data.toJSON());
-            console.log(`📡 Komut Yüklendi: ${command.data.name}`);
-        }
-    }
+// COMMAND LOADER
+client.commands = new Map()
+
+if(fs.existsSync("./commands")){
+const files = fs.readdirSync("./commands")
+for(const file of files){
+if(!file.endsWith(".js")) continue
+try{
+const cmd = require(`./commands/${file}`)
+client.commands.set(file.replace(".js",""),cmd)
+console.log("Komut yüklendi:",file)
+}catch(err){
+console.log("Komut hatalı:",file,err)
+}
+}
 }
 
-// --- BOT HAZIR OLDUĞUNDA ---
-client.once(Events.ClientReady, async () => {
-    console.log(`✅ ${client.user.tag} Olarak Giriş Yapıldı!`);
-    
-    // Botun Durumu (Erensi Style)
-    client.user.setPresence({
-        activities: [{ name: `Erensi Bot v14`, type: ActivityType.Watching }],
-        status: 'online',
-    });
+// EVENT LOADER
+if(fs.existsSync("./events")){
+const events = fs.readdirSync("./events")
+for(const file of events){
+try{
+require(`./events/${file}`)
+console.log("Event yüklendi:",file)
+}catch(err){
+console.log("Event hatalı:",file,err)
+}
+}
+}
 
-    // Slash Komutlarını Kaydet
-    const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
-    try {
-        console.log("🔄 Slash komutları güncelleniyor...");
-        await rest.put(Routes.applicationGuildCommands(client.user.id, GUILD_ID), { body: commands });
-        console.log("🚀 Komutlar başarıyla tanımlandı.");
-    } catch (error) {
-        console.error("❌ Komut Hatası:", error);
-    }
+// AFK sistemi
+client.on("messageCreate", async message=>{
 
-    // Roblox Bağlantısı
-    if (process.env.ROBLOX_COOKIE) {
-        try {
-            const user = await noblox.setCookie(process.env.ROBLOX_COOKIE);
-            console.log(`🟦 Roblox: ${user.UserName} hesabı aktif.`);
-        } catch (err) {
-            console.log("🟥 Roblox Cookie hatalı veya süresi dolmuş.");
-        }
-    }
-});
+if(message.author.bot) return
+if(!message.guild) return
 
-// --- KOMUT ÇALIŞTIRICI ---
-client.on(Events.InteractionCreate, async interaction => {
-    if (!interaction.isChatInputCommand()) return;
+try{
 
-    const command = client.commands.get(interaction.commandName);
-    if (!command) return;
+if(await db.get(`afk_${message.author.id}`)){
+db.delete(`afk_${message.author.id}`)
+message.channel.send("✅ Artık AFK değilsin")
+}
 
-    // Yetki Kontrolü
-    if (!ALLOWED_USERS.includes(interaction.user.id)) {
-        return interaction.reply({ content: "❌ Bu botun komutlarını kullanmaya yetkin yok!", ephemeral: true });
-    }
+const user = message.mentions.users.first()
+if(!user) return
 
-    try {
-        await command.execute(interaction, client);
-    } catch (error) {
-        console.error(error);
-        const errorMsg = "Komut çalışırken bir hata oluştu!";
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({ content: errorMsg, ephemeral: true });
-        } else {
-            await interaction.reply({ content: errorMsg, ephemeral: true });
-        }
-    }
-});
+const sebep = await db.get(`afk_${user.id}`)
+if(sebep){
+message.reply(`💤 Bu kullanıcı AFK\nSebep: ${sebep}`)
+}
 
-// Hataları Yakala (Botun Çökmesini Engeller)
-process.on('unhandledRejection', error => console.error('Hata:', error));
-process.on('uncaughtException', error => console.error('Kritik Hata:', error));
+}catch(err){
+console.log("AFK hata:",err)
+}
 
-client.login(process.env.TOKEN);
+})
+
+// Küfür engel
+client.on("messageCreate", async message=>{
+
+if(!message.guild) return
+if(message.author.bot) return
+
+const aktif = db.get(`kufurengel_${message.guild.id}`)
+if(!aktif) return
+
+const kufurler = ["amk","oç","piç","yarrak"]
+
+if(kufurler.some(x=>message.content.toLowerCase().includes(x))){
+if(message.member.permissions.has("Administrator")) return
+message.delete()
+message.channel.send("🚫 Küfür yasak!")
+}
+
+})
+
+// Global hata koruma
+process.on("unhandledRejection", err=>{
+console.log("Unhandled Promise:",err)
+})
+
+process.on("uncaughtException", err=>{
+console.log("Uncaught Exception:",err)
+})
+
+client.login(process.env.TOKEN)
