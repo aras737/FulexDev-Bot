@@ -1,5 +1,5 @@
 module.exports = {
-    token: "MTQxNTE5MzgwMzI3NDU4ODIyMQ.G2Ffqw.e8bKC4exqQ21MEDdGc0wq_M1G_proBGsDPCYb8", 
+    token: process.env.TOKEN, // Buraya dokunma, Railway'deki Variables kısmından çekecek
     prefix: "tfa!",
     botdavet: "BOT_DAVET_BURAYA",
     desteksunucusu: "BOT_DESTEK_SUNUCUSU_BURAYA",
