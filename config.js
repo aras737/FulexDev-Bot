@@ -1,6 +1,6 @@
 module.exports = {
     token: "BOT_TOKEN_BURAYA", 
-    prefix: "e!",
+    prefix: "tfa!",
     botdavet: "BOT_DAVET_BURAYA",
     desteksunucusu: "BOT_DESTEK_SUNUCUSU_BURAYA",
     website: "BOT_WEBSITE_BURAYA",
